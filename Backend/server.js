@@ -10,6 +10,11 @@ const app = express();
 app.use(cors()); // Enable CORS for development
 app.use(express.json());
 
+// Root path handler to check backend status
+app.get("/", (req, res) => {
+  res.send("iHerd Admin Console Backend API is running successfully!");
+});
+
 // Initialize Firebase Admin SDK
 // Looks for serviceAccountKey.json in the same folder first. If not found, falls back to default initialization.
 try {
