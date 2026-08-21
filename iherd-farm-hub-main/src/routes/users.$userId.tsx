@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFirebaseDoc, useFirebaseCollection } from "../hooks/useFirebaseData";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminUsers } from "../hooks/useAdminUsers";
 import {
   ArrowLeft,
   Phone,
@@ -53,20 +54,7 @@ function UserDetail() {
   const [activeTab, setActiveTab] = useState("overview");
 
   // Fetch authenticated users from backend server to match details
-  const { data: authUsers = [], isLoading: authLoading } = useQuery({
-    queryKey: ["backend_auth_users"],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
-        const data = await res.json();
-        return data.users || [];
-      } catch (error) {
-        console.error("Error fetching users from backend:", error);
-        return [];
-      }
-    },
-    initialData: [],
-  });
+  const { data: authUsers = [], isLoading: authLoading } = useAdminUsers();
 
   const authUser = authUsers.find((u: any) => u.uid === userId);
 

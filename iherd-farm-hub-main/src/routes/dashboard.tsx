@@ -55,6 +55,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { useAdminUsers } from "../hooks/useAdminUsers";
 
 function InviteUserDialog() {
   const [open, setOpen] = useState(false);
@@ -279,20 +280,7 @@ function Dashboard() {
   const { profile } = useAuth();
   const displayName = profile?.name ? profile.name.split(" ")[0] : "Admin";
 
-  const { data: allUsers = [] } = useQuery<any[]>({
-    queryKey: ["adminUsers"],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
-        const data = await res.json();
-        return data.users || [];
-      } catch (error) {
-        console.error("Error fetching users from backend:", error);
-        return [];
-      }
-    },
-    initialData: [],
-  });
+  const { data: allUsers = [] } = useAdminUsers();
   const { data: cattle } = useFirebaseCollection("cattle");
   const { data: orders } = useFirebaseCollection("orders");
   const { data: products } = useFirebaseCollection("products");

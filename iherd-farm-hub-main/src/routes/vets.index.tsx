@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { DataPage } from "@/components/admin/DataPage";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { useAdminUsers } from "../hooks/useAdminUsers";
 
 export const Route = createFileRoute("/vets/")({
   head: () => ({ meta: [{ title: "Veterinarians — iHerd Admin" }] }),
@@ -9,20 +9,7 @@ export const Route = createFileRoute("/vets/")({
 });
 
 function VetsPage() {
-  const { data: allUsers = [] } = useQuery<any[]>({
-    queryKey: ["adminUsers"],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
-        const data = await res.json();
-        return data.users || [];
-      } catch (error) {
-        console.error("Error fetching users from backend:", error);
-        return [];
-      }
-    },
-    initialData: [],
-  });
+  const { data: allUsers = [] } = useAdminUsers();
 
   // Filter users who have a 'veterinarian' or 'vet' profile details or roles array
   const vets = allUsers
