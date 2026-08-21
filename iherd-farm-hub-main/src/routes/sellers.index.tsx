@@ -12,7 +12,7 @@ function SellersPage() {
     queryKey: ["adminUsers"],
     queryFn: async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/admin/users");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
         const data = await res.json();
         return data.users || [];
       } catch (error) {
