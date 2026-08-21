@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DataPage } from "@/components/admin/DataPage";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { getAdminUsers } from "../lib/api/admin.users.server";
 
 export const Route = createFileRoute("/farmers/")({
   head: () => ({ meta: [{ title: "Farmers — iHerd Admin" }] }),
@@ -13,9 +14,8 @@ function FarmersPage() {
     queryKey: ["adminUsers"],
     queryFn: async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
-        const data = await res.json();
-        return data.users || [];
+        const result = await getAdminUsers();
+        return result.users || [];
       } catch (error) {
         console.error("Error fetching users from backend:", error);
         return [];
