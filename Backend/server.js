@@ -7,8 +7,22 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
-app.use(cors()); // Enable CORS for development
+
+// Explicit CORS — handles preflight OPTIONS requests that fail during Render cold starts
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  credentials: false,
+}));
+app.options("*", cors()); // Handle preflight for all routes
+
 app.use(express.json());
+
+// Keep-alive ping endpoint — frontend pings this to prevent Render from sleeping
+app.get("/ping", (req, res) => {
+  res.json({ status: "ok", timestamp: Date.now() });
+});
 
 // Root path handler to check backend status
 app.get("/", (req, res) => {
