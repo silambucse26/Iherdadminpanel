@@ -15,6 +15,7 @@ import {
   UserCircle,
   FileText,
   Stethoscope,
+  HardDrive,
 } from "lucide-react";
 
 import {
@@ -57,6 +58,7 @@ const ops = [
 ];
 const system = [
   { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "Storage", url: "/storage", icon: HardDrive },
   { title: "Reports", url: "/reports", icon: BarChart3 },
 ];
 const account = [

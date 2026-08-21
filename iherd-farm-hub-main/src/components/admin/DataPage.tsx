@@ -22,6 +22,8 @@ import {
 import { PageHeader } from "./PageHeader";
 import { StatusBadge } from "./StatusBadge";
 
+import { getLocalizedText } from "@/lib/utils";
+
 export type Column<T> = {
   key: keyof T | string;
   label: string;
@@ -58,11 +60,11 @@ export function DataPage<T extends Record<string, any>>({
     return data.filter((row) => {
       const matchQ = q
         ? Object.values(row).some((v) =>
-            String(v).toLowerCase().includes(q.toLowerCase())
+            getLocalizedText(v).toLowerCase().includes(q.toLowerCase())
           )
         : true;
-      const matchF =
-        filter === "all" ? true : String(row[statusKey]).toLowerCase() === filter;
+      const rowStatus = getLocalizedText(row[statusKey]).toLowerCase();
+      const matchF = filter === "all" ? true : rowStatus === filter.toLowerCase();
       return matchQ && matchF;
     });
   }, [data, q, filter, statusKey]);
@@ -158,8 +160,8 @@ export function DataPage<T extends Record<string, any>>({
                         {c.render
                           ? c.render(row)
                           : c.key === statusKey
-                          ? <StatusBadge status={String(row[c.key])} />
-                          : String(row[c.key as keyof T])}
+                          ? <StatusBadge status={getLocalizedText(row[c.key])} />
+                          : getLocalizedText(row[c.key as keyof T])}
                       </TableCell>
                     ))}
                   </TableRow>

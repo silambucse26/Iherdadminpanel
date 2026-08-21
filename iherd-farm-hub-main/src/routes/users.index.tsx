@@ -3,6 +3,8 @@ import { DataPage } from "@/components/admin/DataPage";
 import { useFirebaseCollection } from "../hooks/useFirebaseData";
 import { useAdminUsers } from "../hooks/useAdminUsers";
 
+import { getLocalizedText } from "@/lib/utils";
+
 export const Route = createFileRoute("/users/")({
   head: () => ({ meta: [{ title: "Users — iHerd Admin" }] }),
   component: UsersPage,
@@ -133,8 +135,8 @@ function UsersPage() {
               return (
                 <div className="text-xs">
                   <span className="font-semibold text-primary">🌾 Farm: </span>
-                  <span>{farmerInfo.name || "Unnamed Farm"}</span>
-                  {farmerInfo.state && <span className="text-muted-foreground"> ({farmerInfo.state})</span>}
+                  <span>{getLocalizedText(farmerInfo.name, "Unnamed Farm")}</span>
+                  {farmerInfo.state && <span className="text-muted-foreground"> ({getLocalizedText(farmerInfo.state)})</span>}
                 </div>
               );
             }
@@ -142,8 +144,8 @@ function UsersPage() {
               return (
                 <div className="text-xs">
                   <span className="font-semibold text-emerald-600">🏪 Store: </span>
-                  <span>{r.seller.name || r.seller.shopName || "Unnamed Store"}</span>
-                  {r.seller.category && <span className="text-muted-foreground"> ({r.seller.category})</span>}
+                  <span>{getLocalizedText(r.seller.name || r.seller.shopName, "Unnamed Store")}</span>
+                  {r.seller.category && <span className="text-muted-foreground"> ({getLocalizedText(r.seller.category)})</span>}
                 </div>
               );
             }
@@ -151,8 +153,8 @@ function UsersPage() {
               return (
                 <div className="text-xs">
                   <span className="font-semibold text-sky-600">🩺 Vet: </span>
-                  <span>{r.veterinarian.clinic || r.veterinarian.hospital || "Unnamed Clinic"}</span>
-                  {r.veterinarian.qualification && <span className="text-muted-foreground"> ({r.veterinarian.qualification})</span>}
+                  <span>{getLocalizedText(r.veterinarian.clinic || r.veterinarian.hospital, "Unnamed Clinic")}</span>
+                  {r.veterinarian.qualification && <span className="text-muted-foreground"> ({getLocalizedText(r.veterinarian.qualification)})</span>}
                 </div>
               );
             }

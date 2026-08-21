@@ -281,11 +281,11 @@ function Dashboard() {
   const displayName = profile?.name ? profile.name.split(" ")[0] : "Admin";
 
   const { data: allUsers = [] } = useAdminUsers();
-  const { data: cattle } = useFirebaseCollection("cattle");
-  const { data: orders } = useFirebaseCollection("orders");
-  const { data: products } = useFirebaseCollection("products");
-  const { data: productOrders } = useFirebaseCollection("product_orders");
-  const { data: issues } = useFirebaseCollection("issues");
+  const { data: cattle = [] } = useFirebaseCollection("cattle-marketplace");
+  const { data: orders = [] } = useFirebaseCollection("CattleOrders");
+  const { data: products = [] } = useFirebaseCollection("product_marketplace/main/products");
+  const { data: productOrders = [] } = useFirebaseCollection("ProductOrders");
+  const { data: issues = [] } = useFirebaseCollection("issues");
 
   // Extract farmers and sellers dynamically from users list
   const farmers = allUsers.filter((u: any) => u && (

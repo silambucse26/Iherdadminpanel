@@ -30,28 +30,124 @@ app.get("/", (req, res) => {
 });
 
 // Initialize Firebase Admin SDK
-// Looks for serviceAccountKey.json in the same folder first. If not found, falls back to default initialization.
+const bucketName = process.env.VITE_FIREBASE_STORAGE_BUCKET || "auth-b404a.appspot.com";
 try {
   const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
   if (fs.existsSync(serviceAccountPath)) {
     const serviceAccount = require(serviceAccountPath);
     initializeApp({
       credential: cert(serviceAccount),
-      projectId: process.env.VITE_FIREBASE_PROJECT_ID
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID || serviceAccount.project_id || "auth-b404a",
+      storageBucket: bucketName
     });
-    console.log("Firebase Admin SDK initialized using serviceAccountKey.json");
+    console.log(`Firebase Admin SDK initialized with Storage Bucket: ${bucketName}`);
   } else {
-    // Attempts to load from defaults but explicitly configures projectId from env
     initializeApp({
-      projectId: process.env.VITE_FIREBASE_PROJECT_ID
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID || "auth-b404a",
+      storageBucket: bucketName
     });
-    console.log(`Firebase Admin SDK initialized using defaults/env variables with Project ID: ${process.env.VITE_FIREBASE_PROJECT_ID}`);
+    console.log(`Firebase Admin SDK initialized using defaults with Project ID: ${process.env.VITE_FIREBASE_PROJECT_ID}`);
   }
 } catch (error) {
-  console.error("Error initializing Firebase Admin SDK. Make sure to download your serviceAccountKey.json and place it in the Backend directory.", error);
+  console.error("Error initializing Firebase Admin SDK:", error);
 }
 
 const { getFirestore } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
+
+// Helper: list all files under a storage prefix
+async function listFilesUnderPrefix(bucket, prefix) {
+  try {
+    const [files] = await bucket.getFiles({ prefix });
+    return files
+      .filter((f) => !f.name.endsWith("/")) // skip folder placeholders
+      .map((f) => ({
+        name: f.name,
+        size: f.metadata.size ? parseInt(f.metadata.size) : 0,
+        contentType: f.metadata.contentType || "application/octet-stream",
+        updated: f.metadata.updated || null,
+        url: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(f.name)}?alt=media`,
+      }));
+  } catch (err) {
+    console.warn(`Warning: Could not list files for prefix "${prefix}" on bucket "${bucket.name}":`, err.message);
+    return [];
+  }
+}
+
+// REST API: list all Firebase Storage files across all known paths
+app.get("/api/admin/storage", async (req, res) => {
+  try {
+    const defaultBucketName = process.env.VITE_FIREBASE_STORAGE_BUCKET || "auth-b404a.appspot.com";
+    const candidateBuckets = [
+      defaultBucketName,
+      "auth-b404a.firebasestorage.app",
+      "auth-b404a.appspot.com"
+    ];
+
+    let bucket = getStorage().bucket(defaultBucketName);
+    let userImages = [];
+    let invoices = [];
+    let cattleMarketplace = [];
+    let marketplace = [];
+    let success = false;
+    let lastError = null;
+
+    // Try candidate bucket names
+    for (const bName of Array.from(new Set(candidateBuckets))) {
+      try {
+        const testBucket = getStorage().bucket(bName);
+        const [files] = await testBucket.getFiles({ maxResults: 1 });
+        bucket = testBucket;
+        success = true;
+        console.log(`Successfully connected to Storage Bucket: ${bName}`);
+        break;
+      } catch (bErr) {
+        lastError = bErr;
+        console.warn(`Bucket check for "${bName}" failed:`, bErr.message);
+      }
+    }
+
+    if (!success) {
+      console.error("All storage bucket attempts failed:", lastError?.message);
+      return res.status(403).json({
+        error: {
+          code: 403,
+          message: `Storage permission denied or bucket not found. Ensure the Service Account has 'Storage Admin' or 'Storage Object Viewer' role in Google Cloud IAM. (${lastError?.message})`
+        },
+        userImages: [],
+        invoices: [],
+        cattleMarketplace: [],
+        marketplace: [],
+        totals: { userImages: 0, invoices: 0, cattleMarketplace: 0, marketplace: 0, total: 0 }
+      });
+    }
+
+    [userImages, invoices, cattleMarketplace, marketplace] = await Promise.all([
+      listFilesUnderPrefix(bucket, "UserImages/"),
+      listFilesUnderPrefix(bucket, "invoices/"),
+      listFilesUnderPrefix(bucket, "cattle-marketplace/"),
+      listFilesUnderPrefix(bucket, "marketplace/"),
+    ]);
+
+    res.json({
+      userImages,
+      invoices,
+      cattleMarketplace,
+      marketplace,
+      totals: {
+        userImages: userImages.length,
+        invoices: invoices.length,
+        cattleMarketplace: cattleMarketplace.length,
+        marketplace: marketplace.length,
+        total: userImages.length + invoices.length + cattleMarketplace.length + marketplace.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error in /api/admin/storage:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // REST API to list all Firebase Authentication users
 app.get("/api/admin/users", async (req, res) => {
@@ -134,8 +230,65 @@ app.get("/api/admin/users", async (req, res) => {
   }
 });
 
+// REST API to list all Product Orders (bypasses client security rules)
+app.get("/api/admin/product-orders", async (req, res) => {
+  try {
+    const db = getFirestore();
+    const [pSnap, rSnap, legacySnap] = await Promise.all([
+      db.collection("ProductOrders").get().catch(() => ({ docs: [] })),
+      db.collection("received_orders").get().catch(() => ({ docs: [] })),
+      db.collection("product_orders").get().catch(() => ({ docs: [] })),
+    ]);
+
+    const ordersMap = new Map();
+    const addDoc = (doc) => {
+      if (!ordersMap.has(doc.id)) {
+        ordersMap.set(doc.id, { id: doc.id, ...doc.data() });
+      }
+    };
+
+    pSnap.docs?.forEach(addDoc);
+    rSnap.docs?.forEach(addDoc);
+    legacySnap.docs?.forEach(addDoc);
+
+    console.log(`Fetched ${ordersMap.size} product orders from Firestore via Admin SDK`);
+    res.json({ orders: Array.from(ordersMap.values()) });
+  } catch (error) {
+    console.error("Error in /api/admin/product-orders:", error);
+    res.status(500).json({ error: error.message, orders: [] });
+  }
+});
+
+// REST API to list all Cattle Orders (bypasses client security rules)
+app.get("/api/admin/cattle-orders", async (req, res) => {
+  try {
+    const db = getFirestore();
+    const [cSnap, legacySnap] = await Promise.all([
+      db.collection("CattleOrders").get().catch(() => ({ docs: [] })),
+      db.collection("cattle_orders").get().catch(() => ({ docs: [] })),
+    ]);
+
+    const ordersMap = new Map();
+    const addDoc = (doc) => {
+      if (!ordersMap.has(doc.id)) {
+        ordersMap.set(doc.id, { id: doc.id, ...doc.data() });
+      }
+    };
+
+    cSnap.docs?.forEach(addDoc);
+    legacySnap.docs?.forEach(addDoc);
+
+    console.log(`Fetched ${ordersMap.size} cattle orders from Firestore via Admin SDK`);
+    res.json({ orders: Array.from(ordersMap.values()) });
+  } catch (error) {
+    console.error("Error in /api/admin/cattle-orders:", error);
+    res.status(500).json({ error: error.message, orders: [] });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
 });
+
 

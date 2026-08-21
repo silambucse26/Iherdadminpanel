@@ -20,6 +20,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as StorageRouteImport } from './routes/storage'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as FarmersIndexRouteImport } from './routes/farmers.index'
 import { Route as FarmersFarmerIdRouteImport } from './routes/farmers.$farmerId'
@@ -86,6 +87,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StorageRoute = StorageRouteImport.update({
+  id: '/storage',
+  path: '/storage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/signup'
+    | '/storage'
     | '/support'
     | '/farmers/$farmerId'
     | '/marketplace/cattle'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/signup'
+    | '/storage'
     | '/support'
     | '/farmers/$farmerId'
     | '/marketplace/cattle'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/signup'
+    | '/storage'
     | '/support'
     | '/farmers/$farmerId'
     | '/marketplace/cattle'
@@ -315,6 +327,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  StorageRoute: typeof StorageRoute
   SupportRoute: typeof SupportRoute
   FarmersFarmerIdRoute: typeof FarmersFarmerIdRoute
   MarketplaceCattleRoute: typeof MarketplaceCattleRoute
@@ -406,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/storage': {
+      id: '/storage'
+      path: '/storage'
+      fullPath: '/storage'
+      preLoaderRoute: typeof StorageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  StorageRoute: StorageRoute,
   SupportRoute: SupportRoute,
   FarmersFarmerIdRoute: FarmersFarmerIdRoute,
   MarketplaceCattleRoute: MarketplaceCattleRoute,

@@ -2,22 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/admin/PageHeader";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Plus, Image as ImageIcon } from "lucide-react";
+import { StatusBadge } from "@/components/admin/StatusBadge";
+import { useFirebaseCollection } from "../hooks/useFirebaseData";
 
 export const Route = createFileRoute("/banners")({
   head: () => ({ meta: [{ title: "Banners — iHerd Admin" }] }),
   component: Banners,
 });
 
-const banners = [
-  { id: "B-01", title: "Monsoon cattle care", placement: "Home hero", clicks: 12480, ctr: "4.8%", status: "Active", grad: "from-primary to-primary-glow" },
-  { id: "B-02", title: "20% off vet medicines", placement: "Marketplace top", clicks: 8240, ctr: "3.2%", status: "Active", grad: "from-info to-primary" },
-  { id: "B-03", title: "Refer a farmer · earn ₹500", placement: "App drawer", clicks: 2104, ctr: "1.1%", status: "Scheduled", grad: "from-warning to-primary-glow" },
-  { id: "B-04", title: "Buffalo breed expo", placement: "Marketplace banner", clicks: 0, ctr: "—", status: "Draft", grad: "from-muted-foreground to-primary" },
+const GRAD_COLORS = [
+  "from-primary to-primary-glow",
+  "from-info to-primary",
+  "from-warning to-primary-glow",
+  "from-muted-foreground to-primary",
+  "from-success to-primary",
+  "from-destructive to-primary-glow",
 ];
 
 function Banners() {
+  const { data: banners = [], isLoading } = useFirebaseCollection<any>("banners");
+
   return (
     <div>
       <PageHeader
@@ -30,38 +35,62 @@ function Banners() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {banners.map((b) => (
-          <Card key={b.id} className="rounded-2xl overflow-hidden p-0">
-            <div className={`relative h-32 bg-gradient-to-br ${b.grad}`}>
-              <div className="absolute inset-0 grid place-items-center text-white/90">
-                <ImageIcon className="h-8 w-8" />
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="rounded-2xl overflow-hidden p-0 animate-pulse">
+              <div className="h-32 bg-muted" />
+              <div className="p-4 space-y-2">
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-1/2" />
               </div>
-              <div className="absolute top-3 right-3">
-                <StatusBadge status={b.status} />
-              </div>
-            </div>
-            <div className="p-4">
-              <div className="font-semibold truncate">{b.title}</div>
-              <div className="text-xs text-muted-foreground">{b.placement}</div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground">Clicks</div>
-                  <div className="font-semibold">{b.clicks.toLocaleString()}</div>
+            </Card>
+          ))}
+        </div>
+      ) : banners.length === 0 ? (
+        <Card className="rounded-2xl p-12 text-center">
+          <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+          <p className="font-semibold">No banners found</p>
+          <p className="text-sm text-muted-foreground mt-1">No banner data in the Firestore 'banners' collection yet.</p>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {banners.map((b: any, idx: number) => (
+            <Card key={b.id || idx} className="rounded-2xl overflow-hidden p-0">
+              <div className={`relative h-32 bg-gradient-to-br ${GRAD_COLORS[idx % GRAD_COLORS.length]}`}>
+                <div className="absolute inset-0 grid place-items-center text-white/90">
+                  {b.imageUrl ? (
+                    <img src={b.imageUrl} alt={b.title} className="h-full w-full object-cover" />
+                  ) : (
+                    <ImageIcon className="h-8 w-8" />
+                  )}
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">CTR</div>
-                  <div className="font-semibold">{b.ctr}</div>
+                <div className="absolute top-3 right-3">
+                  <StatusBadge status={b.status || "Draft"} />
                 </div>
               </div>
-              <div className="mt-3 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">Edit</Button>
-                <Button variant="outline" size="sm" className="flex-1">Pause</Button>
+              <div className="p-4">
+                <div className="font-semibold truncate">{b.title || b.name || "Untitled banner"}</div>
+                <div className="text-xs text-muted-foreground">{b.placement || b.location || "—"}</div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Clicks</div>
+                    <div className="font-semibold">{(b.clicks ?? 0).toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">CTR</div>
+                    <div className="font-semibold">{b.ctr || "—"}</div>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1">Edit</Button>
+                  <Button variant="outline" size="sm" className="flex-1">Pause</Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

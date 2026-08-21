@@ -2,19 +2,20 @@ import { useQuery } from "@tanstack/react-query";
 import { collection, getDocs, limit, query, doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-export function useFirebaseCollection<T>(collectionName: string) {
+export function useFirebaseCollection<T>(collectionPath: string) {
   const isMockKey = !import.meta.env.VITE_FIREBASE_API_KEY || 
                     import.meta.env.VITE_FIREBASE_API_KEY === "mock-api-key" || 
                     import.meta.env.VITE_FIREBASE_API_KEY.includes("YOUR_ACTUAL");
 
   return useQuery({
-    queryKey: [collectionName],
+    queryKey: [collectionPath],
     queryFn: async () => {
       if (isMockKey) {
         return [];
       }
       try {
-        const colRef = collection(db, collectionName);
+        const segments = collectionPath.split("/").filter(Boolean);
+        const colRef = collection(db, segments[0], ...segments.slice(1));
         const snapshot = await getDocs(colRef);
         if (snapshot.empty) {
           return [];
@@ -25,11 +26,12 @@ export function useFirebaseCollection<T>(collectionName: string) {
         });
         return results as T[];
       } catch (error) {
-        console.warn(`Error fetching ${collectionName} from Firebase:`, error);
+        console.warn(`Error fetching ${collectionPath} from Firebase:`, error);
         return [];
       }
     },
-    initialData: [],
+    placeholderData: [],
+    staleTime: 10_000,
   });
 }
 
