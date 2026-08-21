@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { DataPage } from "@/components/admin/DataPage";
 import { useQuery } from "@tanstack/react-query";
 import { useFirebaseCollection } from "../hooks/useFirebaseData";
-import { getAdminUsers } from "../lib/api/admin.users.server";
 
 export const Route = createFileRoute("/users/")({
   head: () => ({ meta: [{ title: "Users — iHerd Admin" }] }),
@@ -15,8 +14,9 @@ function UsersPage() {
     queryKey: ["backend_auth_users"],
     queryFn: async () => {
       try {
-        const result = await getAdminUsers();
-        return result.users || [];
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
+        const data = await res.json();
+        return data.users || [];
       } catch (error) {
         console.error("Error fetching users from backend:", error);
         return [];

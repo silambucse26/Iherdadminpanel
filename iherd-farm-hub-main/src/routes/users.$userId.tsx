@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFirebaseDoc, useFirebaseCollection } from "../hooks/useFirebaseData";
 import { useAuth } from "@/hooks/useAuth";
-import { getAdminUsers } from "../lib/api/admin.users.server";
 import {
   ArrowLeft,
   Phone,
@@ -58,8 +57,9 @@ function UserDetail() {
     queryKey: ["backend_auth_users"],
     queryFn: async () => {
       try {
-        const result = await getAdminUsers();
-        return result.users || [];
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
+        const data = await res.json();
+        return data.users || [];
       } catch (error) {
         console.error("Error fetching users from backend:", error);
         return [];
