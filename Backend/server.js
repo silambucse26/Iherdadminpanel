@@ -15,7 +15,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Accept"],
   credentials: false,
 }));
-app.options("*", cors()); // Handle preflight for all routes
+app.options(/.*/, cors()); // Handle preflight for all routes — regex works in all Express versions
 
 app.use(express.json());
 
