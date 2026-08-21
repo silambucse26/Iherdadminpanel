@@ -9,7 +9,7 @@ const KEEP_ALIVE_INTERVAL_MS = 10 * 60 * 1000;
 // Warm up the backend immediately when the app loads
 async function pingBackend() {
   try {
-    await fetch(`${API_BASE}/ping`, { method: "GET" });
+    await fetch(`${API_BASE}/`, { method: "GET" });
   } catch {
     // Silently ignore — this is just a warm-up
   }
