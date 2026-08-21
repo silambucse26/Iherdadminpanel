@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         uid: "admin-uid",
         name: "Admin User",
         email: adminEmail,
-        phone: "+91 98xxx 21034",
+        phone: "",
         role: "Super Admin",
         createdAt: new Date().toISOString()
       });
