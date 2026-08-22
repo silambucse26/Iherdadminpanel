@@ -51,23 +51,24 @@ function CattleOrdersPage() {
       ]}
       data={orders.map(o => ({
         ...o,
-        status: o.status || "Pending",
-        id: o.id || o.orderId || "—",
-        buyer: o.buyerName || o.userName || o.userId || "—",
-        seller: o.sellerName || o.sellerId || "—",
-        animal: o.cattleBreed || o.animalType || o.breed || o.title || "Cattle",
-        amount: o.amount ? (typeof o.amount === "number" ? `₹${o.amount.toLocaleString()}` : o.amount) : o.price ? `₹${o.price}` : "—",
-        date: o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString() : o.createdAt || o.date || "—",
+        status: getLocalizedText(o.status, "Pending"),
+        id: getLocalizedText(o.id || o.orderId, "—"),
+        buyer: getLocalizedText(o.buyerName || o.userName || o.userId, "—"),
+        seller: getLocalizedText(o.sellerName || o.sellerId, "—"),
+        animal: getLocalizedText(o.cattleBreed || o.animalType || o.breed || o.title, "Cattle"),
+        amount: o.amount ? (typeof o.amount === "number" ? `₹${o.amount.toLocaleString()}` : getLocalizedText(o.amount)) : o.price ? (typeof o.price === "number" ? `₹${o.price.toLocaleString()}` : getLocalizedText(o.price)) : "—",
+        date: o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString() : getLocalizedText(o.createdAt || o.date, "—"),
       }))}
       columns={[
-        { key: "id", label: "Order ID", render: (r) => <span className="font-mono text-xs">{r.id}</span> },
-        { key: "buyer", label: "Buyer" },
-        { key: "seller", label: "Seller" },
-        { key: "animal", label: "Animal" },
-        { key: "amount", label: "Amount", render: (r) => <span className="font-semibold">{r.amount}</span> },
-        { key: "date", label: "Date" },
+        { key: "id", label: "Order ID", render: (r) => <span className="font-mono text-xs">{getLocalizedText(r.id)}</span> },
+        { key: "buyer", label: "Buyer", render: (r) => <span>{getLocalizedText(r.buyer)}</span> },
+        { key: "seller", label: "Seller", render: (r) => <span>{getLocalizedText(r.seller)}</span> },
+        { key: "animal", label: "Animal", render: (r) => <span>{getLocalizedText(r.animal)}</span> },
+        { key: "amount", label: "Amount", render: (r) => <span className="font-semibold">{getLocalizedText(r.amount)}</span> },
+        { key: "date", label: "Date", render: (r) => <span>{getLocalizedText(r.date)}</span> },
         { key: "status", label: "Status" },
       ]}
     />
   );
 }
+

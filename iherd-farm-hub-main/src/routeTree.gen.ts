@@ -22,9 +22,12 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as StorageRouteImport } from './routes/storage'
 import { Route as SupportRouteImport } from './routes/support'
+import { Route as TokenAdvanceRouteImport } from './routes/token-advance'
 import { Route as FarmersIndexRouteImport } from './routes/farmers.index'
 import { Route as FarmersFarmerIdRouteImport } from './routes/farmers.$farmerId'
+import { Route as MarketplaceBestSellersRouteImport } from './routes/marketplace.best-sellers'
 import { Route as MarketplaceCattleRouteImport } from './routes/marketplace.cattle'
+import { Route as MarketplaceCouponsRouteImport } from './routes/marketplace.coupons'
 import { Route as MarketplaceProductsRouteImport } from './routes/marketplace.products'
 import { Route as OrdersCattleRouteImport } from './routes/orders.cattle'
 import { Route as OrdersProductsRouteImport } from './routes/orders.products'
@@ -99,6 +102,11 @@ const SupportRoute = SupportRouteImport.update({
   path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TokenAdvanceRoute = TokenAdvanceRouteImport.update({
+  id: '/token-advance',
+  path: '/token-advance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FarmersIndexRoute = FarmersIndexRouteImport.update({
   id: '/farmers/',
   path: '/farmers/',
@@ -109,9 +117,19 @@ const FarmersFarmerIdRoute = FarmersFarmerIdRouteImport.update({
   path: '/farmers/$farmerId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceBestSellersRoute = MarketplaceBestSellersRouteImport.update({
+  id: '/marketplace/best-sellers',
+  path: '/marketplace/best-sellers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceCattleRoute = MarketplaceCattleRouteImport.update({
   id: '/marketplace/cattle',
   path: '/marketplace/cattle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceCouponsRoute = MarketplaceCouponsRouteImport.update({
+  id: '/marketplace/coupons',
+  path: '/marketplace/coupons',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceProductsRoute = MarketplaceProductsRouteImport.update({
@@ -169,8 +187,11 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
+  '/token-advance': typeof TokenAdvanceRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
+  '/marketplace/best-sellers': typeof MarketplaceBestSellersRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
+  '/marketplace/coupons': typeof MarketplaceCouponsRoute
   '/marketplace/products': typeof MarketplaceProductsRoute
   '/orders/cattle': typeof OrdersCattleRoute
   '/orders/products': typeof OrdersProductsRoute
@@ -195,8 +216,11 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
+  '/token-advance': typeof TokenAdvanceRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
+  '/marketplace/best-sellers': typeof MarketplaceBestSellersRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
+  '/marketplace/coupons': typeof MarketplaceCouponsRoute
   '/marketplace/products': typeof MarketplaceProductsRoute
   '/orders/cattle': typeof OrdersCattleRoute
   '/orders/products': typeof OrdersProductsRoute
@@ -222,8 +246,11 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/storage': typeof StorageRoute
   '/support': typeof SupportRoute
+  '/token-advance': typeof TokenAdvanceRoute
   '/farmers/$farmerId': typeof FarmersFarmerIdRoute
+  '/marketplace/best-sellers': typeof MarketplaceBestSellersRoute
   '/marketplace/cattle': typeof MarketplaceCattleRoute
+  '/marketplace/coupons': typeof MarketplaceCouponsRoute
   '/marketplace/products': typeof MarketplaceProductsRoute
   '/orders/cattle': typeof OrdersCattleRoute
   '/orders/products': typeof OrdersProductsRoute
@@ -250,8 +277,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/storage'
     | '/support'
+    | '/token-advance'
     | '/farmers/$farmerId'
+    | '/marketplace/best-sellers'
     | '/marketplace/cattle'
+    | '/marketplace/coupons'
     | '/marketplace/products'
     | '/orders/cattle'
     | '/orders/products'
@@ -276,8 +306,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/storage'
     | '/support'
+    | '/token-advance'
     | '/farmers/$farmerId'
+    | '/marketplace/best-sellers'
     | '/marketplace/cattle'
+    | '/marketplace/coupons'
     | '/marketplace/products'
     | '/orders/cattle'
     | '/orders/products'
@@ -302,8 +335,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/storage'
     | '/support'
+    | '/token-advance'
     | '/farmers/$farmerId'
+    | '/marketplace/best-sellers'
     | '/marketplace/cattle'
+    | '/marketplace/coupons'
     | '/marketplace/products'
     | '/orders/cattle'
     | '/orders/products'
@@ -329,8 +365,11 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   StorageRoute: typeof StorageRoute
   SupportRoute: typeof SupportRoute
+  TokenAdvanceRoute: typeof TokenAdvanceRoute
   FarmersFarmerIdRoute: typeof FarmersFarmerIdRoute
+  MarketplaceBestSellersRoute: typeof MarketplaceBestSellersRoute
   MarketplaceCattleRoute: typeof MarketplaceCattleRoute
+  MarketplaceCouponsRoute: typeof MarketplaceCouponsRoute
   MarketplaceProductsRoute: typeof MarketplaceProductsRoute
   OrdersCattleRoute: typeof OrdersCattleRoute
   OrdersProductsRoute: typeof OrdersProductsRoute
@@ -435,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/token-advance': {
+      id: '/token-advance'
+      path: '/token-advance'
+      fullPath: '/token-advance'
+      preLoaderRoute: typeof TokenAdvanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/farmers/': {
       id: '/farmers/'
       path: '/farmers'
@@ -449,11 +495,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FarmersFarmerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/best-sellers': {
+      id: '/marketplace/best-sellers'
+      path: '/marketplace/best-sellers'
+      fullPath: '/marketplace/best-sellers'
+      preLoaderRoute: typeof MarketplaceBestSellersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace/cattle': {
       id: '/marketplace/cattle'
       path: '/marketplace/cattle'
       fullPath: '/marketplace/cattle'
       preLoaderRoute: typeof MarketplaceCattleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace/coupons': {
+      id: '/marketplace/coupons'
+      path: '/marketplace/coupons'
+      fullPath: '/marketplace/coupons'
+      preLoaderRoute: typeof MarketplaceCouponsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace/products': {
@@ -529,8 +589,11 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   StorageRoute: StorageRoute,
   SupportRoute: SupportRoute,
+  TokenAdvanceRoute: TokenAdvanceRoute,
   FarmersFarmerIdRoute: FarmersFarmerIdRoute,
+  MarketplaceBestSellersRoute: MarketplaceBestSellersRoute,
   MarketplaceCattleRoute: MarketplaceCattleRoute,
+  MarketplaceCouponsRoute: MarketplaceCouponsRoute,
   MarketplaceProductsRoute: MarketplaceProductsRoute,
   OrdersCattleRoute: OrdersCattleRoute,
   OrdersProductsRoute: OrdersProductsRoute,

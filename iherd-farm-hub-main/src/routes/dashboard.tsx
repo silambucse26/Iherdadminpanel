@@ -14,6 +14,9 @@ import {
   Tag,
   ListChecks,
   BadgeCheck,
+  Flame,
+  Ticket,
+  Coins,
 } from "lucide-react";
 import {
   AreaChart,
@@ -272,7 +275,8 @@ const tooltipStyle = {
 
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useFirebaseCollection } from "../hooks/useFirebaseData";
+import { useFirebaseCollection, useCoupons, useTokenAdvance, useBestSellers } from "../hooks/useFirebaseData";
+import { getLocalizedText } from "@/lib/utils";
 
 function Dashboard() {
   const [range, setRange] = useState<keyof typeof metricRanges>("month");
@@ -286,6 +290,9 @@ function Dashboard() {
   const { data: products = [] } = useFirebaseCollection("product_marketplace/main/products");
   const { data: productOrders = [] } = useFirebaseCollection("ProductOrders");
   const { data: issues = [] } = useFirebaseCollection("issues");
+  const { data: coupons = [] } = useCoupons();
+  const { data: tokenAdvData } = useTokenAdvance();
+  const { data: bestSellers = [] } = useBestSellers();
 
   // Extract farmers and sellers dynamically from users list
   const farmers = allUsers.filter((u: any) => u && (
@@ -307,6 +314,11 @@ function Dashboard() {
   const productsCount = products ? products.length : 0;
   const productOrdersCount = productOrders ? productOrders.length : 0;
   const issuesCount = issues ? issues.length : 0;
+  const activeCouponsCount = coupons ? coupons.filter((c) => c.active !== false).length : 0;
+  const bestSellersCount = products.filter((p: any) => p.bestSeller || p.isBestSeller).length || bestSellers.length;
+  const cowAdvanceRate = tokenAdvData?.rates?.cow ?? 200;
+  const buffaloAdvanceRate = tokenAdvData?.rates?.buffalo ?? 250;
+
 
   // Build dynamic growth data from actual farmers and sellers
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -321,48 +333,55 @@ function Dashboard() {
   });
 
   // Dynamic product mix counts
-  const feedCount = products ? products.filter((p: any) => p.category?.toLowerCase() === "feed").length : 0;
-  const medCount = products ? products.filter((p: any) => p.category?.toLowerCase() === "medicine" || p.category?.toLowerCase() === "medicines").length : 0;
-  const eqCount = products ? products.filter((p: any) => p.category?.toLowerCase() === "equipment").length : 0;
-  const suppCount = products ? products.filter((p: any) => p.category?.toLowerCase() === "supplements" || p.category?.toLowerCase() === "supplement").length : 0;
-  const accCount = products ? products.filter((p: any) => p.category?.toLowerCase() === "accessories" || p.category?.toLowerCase() === "accessory").length : 0;
+  const getCat = (p: any) => getLocalizedText(p.category || p.categoryName || p.categoryId).toLowerCase();
+  const feedCount = products ? products.filter((p: any) => getCat(p).includes("feed")).length : 0;
+  const medCount = products ? products.filter((p: any) => getCat(p).includes("med") || getCat(p).includes("disease")).length : 0;
+  const eqCount = products ? products.filter((p: any) => getCat(p).includes("equip") || getCat(p).includes("farm")).length : 0;
+  const suppCount = products ? products.filter((p: any) => getCat(p).includes("supp") || getCat(p).includes("breed")).length : 0;
+  const accCount = products ? products.filter((p: any) => getCat(p).includes("acc") || getCat(p).includes("herd")).length : 0;
 
   // Dynamic recent activity
   const dynamicActivity: any[] = [];
   if (cattle && cattle.length > 0) {
     cattle.slice(0, 2).forEach((c: any) => {
+      const titleStr = getLocalizedText(c.title || c.breed || c.name, "New listing");
+      const priceStr = getLocalizedText(c.price, "—");
       dynamicActivity.push({
         who: "Cattle Listing",
-        what: `${c.title || "New listing"} · Price: ${c.price || "—"}`,
-        when: c.joined || "Just now",
-        tag: c.status?.toLowerCase() || "pending"
+        what: `${titleStr} · Price: ${priceStr}`,
+        when: getLocalizedText(c.joined || c.createdAt, "Just now"),
+        tag: getLocalizedText(c.status, "pending").toLowerCase()
       });
     });
   }
   if (orders && orders.length > 0) {
     orders.slice(0, 2).forEach((o: any) => {
+      const sellerStr = getLocalizedText(o.seller || o.sellerName, "—");
+      const amtStr = getLocalizedText(o.amount || o.totalAmount, "—");
       dynamicActivity.push({
-        who: `Order #${o.id}`,
-        what: `Seller: ${o.seller || "—"} · Amount: ${o.amount || "—"}`,
-        when: o.date || "Just now",
-        tag: o.status === "Completed" ? "paid" : "pending"
+        who: `Order #${getLocalizedText(o.id)}`,
+        what: `Seller: ${sellerStr} · Amount: ${amtStr}`,
+        when: getLocalizedText(o.date || o.createdAt, "Just now"),
+        tag: getLocalizedText(o.status) === "Completed" ? "paid" : "pending"
       });
     });
   }
   if (farmers && farmers.length > 0) {
     farmers.slice(0, 1).forEach((f: any) => {
+      const nameStr = getLocalizedText(f.displayName || f.name, "Farmer");
       dynamicActivity.push({
         who: "Farmer KYC",
-        what: `${f.name} — KYC status under review`,
-        when: f.joined || "Just now",
-        tag: f.status?.toLowerCase() || "inreview"
+        what: `${nameStr} — KYC status under review`,
+        when: getLocalizedText(f.joined || f.createdAt, "Just now"),
+        tag: getLocalizedText(f.status, "inreview").toLowerCase()
       });
     });
   }
 
   // Today at a glance counts
-  const pendingProductApprovals = products ? products.filter((p: any) => p.status === "Pending").length : 0;
-  const kycPendingCount = farmers ? farmers.filter((f: any) => f.status === "Pending").length : 0;
+  const pendingProductApprovals = products ? products.filter((p: any) => getLocalizedText(p.status).toLowerCase() === "pending").length : 0;
+  const kycPendingCount = farmers ? farmers.filter((f: any) => getLocalizedText(f.status).toLowerCase() === "pending").length : 0;
+
 
   // Dynamic cattle market growth data
   const dynamicCattleMarket = monthNames.map((month) => {
@@ -436,18 +455,15 @@ function Dashboard() {
         </Select>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5 mb-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6">
         <Kpi label="Total farmers" value={scaleNum(farmersCount, m)} delta="+8.2%" up icon={Users} tint="bg-primary/10 text-primary" />
         <Kpi label="Verified farmers" value={scaleNum(activeFarmersCount, m)} delta="+6.4%" up icon={BadgeCheck} tint="bg-success/10 text-success" />
         <Kpi label="Total sellers" value={scaleNum(sellersCount, m)} delta="+4.8%" up icon={Store} tint="bg-info/10 text-info" />
         <Kpi label="Cattle registered" value={scaleNum(cattleCount, m)} delta="+3.6%" up icon={Beef} tint="bg-warning/10 text-warning-foreground" />
-        <Kpi label="Cattle listed for sale" value={scaleNum(Math.round(cattleCount * 0.19), m)} delta="+12.1%" up icon={Tag} tint="bg-chart-2/10 text-chart-2" />
         <Kpi label="Total products" value={scaleNum(productsCount, m)} delta="+5.7%" up icon={ShoppingBag} tint="bg-primary/10 text-primary" />
-        <Kpi label="Product orders" value={scaleNum(productOrdersCount, m)} delta="-1.6%" up={false} icon={PackageCheck} tint="bg-info/10 text-info" />
-        <Kpi label="Marketplace revenue" value={`₹${scaleNum(0, m)}`} delta="+12.4%" up icon={IndianRupee} tint="bg-success/10 text-success" />
-        <Kpi label="Active listings" value={scaleNum(cattleCount, m)} delta="+9.3%" up icon={ListChecks} tint="bg-chart-2/10 text-chart-2" />
-        <Kpi label="Cattle orders" value={scaleNum(ordersCount, m)} delta="+14.2%" up icon={Beef} tint="bg-warning/10 text-warning-foreground" />
-        <Kpi label="Customer issues" value={scaleNum(issuesCount, m)} delta="-9.1%" up icon={LifeBuoy} tint="bg-destructive/10 text-destructive" />
+        <Kpi label="Best seller items" value={scaleNum(bestSellersCount, m)} delta="+15.0%" up icon={Flame} tint="bg-amber-500/10 text-amber-600" />
+        <Kpi label="Active coupons" value={scaleNum(activeCouponsCount, m)} delta="+28.0%" up icon={Ticket} tint="bg-purple-500/10 text-purple-600" />
+        <Kpi label="Token advance (Cow)" value={`₹${cowAdvanceRate}`} delta="Locked" up icon={Coins} tint="bg-emerald-500/10 text-emerald-600" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 mb-6">

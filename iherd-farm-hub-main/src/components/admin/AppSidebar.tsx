@@ -16,6 +16,9 @@ import {
   FileText,
   Stethoscope,
   HardDrive,
+  Ticket,
+  Flame,
+  Coins,
 } from "lucide-react";
 
 import {
@@ -45,6 +48,8 @@ const people = [
 const marketplace = [
   { title: "Product Marketplace", url: "/marketplace/products", icon: ShoppingBag },
   { title: "Cattle Marketplace", url: "/marketplace/cattle", icon: ShoppingBag },
+  { title: "Best Sellers", url: "/marketplace/best-sellers", icon: Flame },
+  { title: "Coupon Codes", url: "/marketplace/coupons", icon: Ticket },
 ];
 const orders = [
   { title: "Product Orders", url: "/orders/products", icon: Package },
@@ -53,6 +58,7 @@ const orders = [
 ];
 const ops = [
   { title: "Payments", url: "/payments", icon: Wallet },
+  { title: "Token Advance", url: "/token-advance", icon: Coins },
   { title: "Banners & Ads", url: "/banners", icon: Megaphone },
   { title: "Customer Issues", url: "/support", icon: LifeBuoy },
 ];
@@ -65,6 +71,7 @@ const account = [
   { title: "Profile", url: "/profile", icon: UserCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
+
 
 function Group({ label, items }: { label: string; items: typeof main }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
